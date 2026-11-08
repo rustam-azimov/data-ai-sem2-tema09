@@ -271,3 +271,5 @@ th {
     transition: none !important
   }
 }
+
+pre mark{background:#ffe28a;color:#112e24;border-radius:3px;padding:1px 0} #api-json,#document{scroll-behavior:smooth}

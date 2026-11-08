@@ -32,6 +32,7 @@
     $('api-status').textContent =
       `${label}. На странице: ${data.products.length}; total: ${data.total}; limit: ${data.limit}; skip: ${data.skip}.`;
     $('api-json').textContent = JSON.stringify(data, null, 2);
+    $('api-search-result').textContent='';
     $('page-feedback').textContent = '';
   }
 
@@ -89,6 +90,7 @@
   function documentView() {
     $('document').textContent = JSON.stringify(current(), null, 2);
     $('path-output').textContent = 'Введите путь к полю.';
+    $('doc-search-result').textContent='';
   }
 
   function resetView() {
@@ -101,6 +103,9 @@
     $('flat-stats').textContent = 'До раскрытия: ' + products.length + ' товаров.';
     $('flat-feedback').textContent = '';
     $('flat-count').value = '';
+    const reviewCounts=products.map(p=>({id:p.id,reviews_count:(p.reviews||[]).length}));
+    const totalReviews=reviewCounts.reduce((n,p)=>n+p.reviews_count,0);
+    $('review-count-table').innerHTML=table(reviewCounts.length<100?reviewCounts.concat([{id:'Сумма',reviews_count:totalReviews}]):reviewCounts)+(reviewCounts.length>=100?`<p>Показаны первые 100 из ${reviewCounts.length} товаров. Сумма отзывов по ВСЕМ товарам: ${totalReviews}.</p>`:'');
     checks.flat = false;
     checks.ai = false;
     $('ai-feedback').textContent = 'Выберите ответ для текущего набора данных.';
@@ -194,6 +199,21 @@
   $('protocol').onclick = () => download('practice09_1.txt', 'Практика 09·1\nНабор: ' + source +
     '\nПроверки: ' + JSON.stringify(checks, null, 2) + '\nТоваров: ' + products.length + '\nОтзывов: ' +
     toTables(products).reviews.length + '\nОбъяснение: ' + $('reflection').value);
+  function addSearch(prefix, viewer) {
+    let previous='', index=-1, saved='';
+    $(prefix+'-search-next').onclick=()=>{
+      const pre=$(viewer), text=pre.textContent, term=$(prefix+'-search').value;
+      if (!term) {$(prefix+'-search-result').textContent='Введите слово или ключ.';return;}
+      const positions=[];let from=0;while(from<=text.length){const pos=text.toLowerCase().indexOf(term.toLowerCase(),from);if(pos<0)break;positions.push(pos);from=pos+term.length;}
+      index=(term===previous&&saved===text)?(index+1)%Math.max(1,positions.length):0;previous=term;saved=text;
+      if(!positions.length){pre.textContent=text;$(prefix+'-search-result').textContent='Совпадений нет: проверьте весь документ и выбранный товар.';return;}
+      const at=positions[index];const mark=document.createElement('mark');mark.textContent=text.slice(at,at+term.length);pre.replaceChildren(document.createTextNode(text.slice(0,at)),mark,document.createTextNode(text.slice(at+term.length)));
+      $(prefix+'-search-result').textContent=`Совпадение ${index+1} из ${positions.length}.`;
+      pre.scrollTop+=mark.getBoundingClientRect().top-pre.getBoundingClientRect().top-pre.clientHeight/2;
+      reveal(viewer);
+    };
+  }
+  addSearch('api','api-json');addSearch('doc','document');
   snapshot();
   resetView();
 })();
