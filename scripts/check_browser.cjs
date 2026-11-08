@@ -101,12 +101,14 @@ const root = path.resolve(__dirname, '..'),
   check(contents.includes('brand_state'), 'CSV fields');
   check(contents.split('\r\n').length === 13, 'CSV rows');
   await page.setInputFiles('#upload', path.join(root, '05_ДАННЫЕ_СТУДЕНТАМ/variant_2.json'));
+  await page.waitForFunction(() => document.getElementById('tables-stats').textContent.includes('products: 10 строк; reviews: 30'));
   check((await text('tables-stats')).includes('products: 10 строк; reviews: 30'), 'upload variant');
   await page.setInputFiles('#upload', {
     name: 'bad.json',
     mimeType: 'application/json',
     buffer: Buffer.from('[{"id":1}]')
   });
+  await page.waitForFunction(() => document.getElementById('upload-status').textContent.includes('Файл не принят'));
   check((await text('upload-status')).includes('Файл не принят'), 'reject upload');
   check((await text('tables-stats')).includes('products: 10'), 'preserve valid upload');
   await page.click('#reset-data');
