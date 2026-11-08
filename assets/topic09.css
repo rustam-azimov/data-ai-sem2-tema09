@@ -1,0 +1,273 @@
+.intro {
+  padding: 38px 0 18px
+}
+
+.intro h1 {
+  font-size: clamp(32px, 5vw, 54px)
+}
+
+.panel {
+  margin: 20px 0;
+  min-width: 0
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 27px
+}
+
+.toolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit
+}
+
+button {
+  border: 1px solid #aac7b6;
+  border-radius: 8px;
+  padding: 9px 13px;
+  background: #fff;
+  color: #164e3e;
+  cursor: pointer
+}
+
+button:hover {
+  background: #e5f1e9
+}
+
+button[aria-pressed=true] {
+  background: #146451;
+  color: #fff
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: wait
+}
+
+input,
+select,
+textarea {
+  padding: 8px;
+  border: 1px solid #adc5b5;
+  border-radius: 7px;
+  background: white;
+  color: var(--text);
+  max-width: 100%
+}
+
+label {
+  display: block
+}
+
+input[type=number] {
+  width: 130px
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  margin: 8px 0
+}
+
+pre {
+  background: #102f27;
+  color: #edfff4;
+  padding: 18px;
+  border-radius: 10px;
+  font: 13px/1.65 ui-monospace, monospace;
+  overflow: auto;
+  max-height: 450px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere
+}
+
+code {
+  font-size: .92em;
+  background: #edf4ee;
+  padding: 2px 4px;
+  border-radius: 4px
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 18px 0;
+  padding: 16px
+}
+
+fieldset button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  text-align: left
+}
+
+legend {
+  font-weight: 650;
+  max-width: 100%
+}
+
+.ok,
+.bad {
+  display: block;
+  padding: 10px 0
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px
+}
+
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 9px;
+  vertical-align: top
+}
+
+th {
+  background: #e5f0e8
+}
+
+.mini-data {
+  max-height: 420px;
+  overflow: auto
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 20px
+}
+
+.workspace>* {
+  min-width: 0
+}
+
+.tasklist {
+  align-self: start;
+  padding: 16px;
+  position: sticky;
+  top: 10px
+}
+
+.tasklist button {
+  width: 100%;
+  text-align: left;
+  margin: 4px 0;
+  font-size: 14px
+}
+
+.tasklist button.active {
+  background: #146451;
+  color: white
+}
+
+.editor {
+  font: 14px/1.7 ui-monospace, monospace
+}
+
+.upload input {
+  display: block;
+  width: 100%;
+  font-size: 13px
+}
+
+.exercise-label {
+  color: #146451;
+  font-weight: 700
+}
+
+.download-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px
+}
+
+.section h1 {
+  font-size: clamp(32px, 5vw, 52px)
+}
+
+[hidden] {
+  display: none !important
+}
+
+.lab-content {
+  max-width: 950px;
+  margin: auto;
+  padding-top: 32px
+}
+
+.lab-content h1 {
+  font-size: clamp(30px, 4vw, 46px)
+}
+
+.lab-content li {
+  margin: 9px 0
+}
+
+.lab-content .mini-data {
+  max-height: none
+}
+
+@media(max-width:850px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr)
+  }
+
+  .tasklist {
+    position: static;
+    display: flex;
+    overflow: auto;
+    gap: 8px
+  }
+
+  .tasklist button {
+    min-width: 180px;
+    width: 180px;
+    flex-shrink: 0
+  }
+
+  .tasklist h2 {
+    display: none
+  }
+
+  .panel {
+    padding: 18px
+  }
+
+  .video-stub {
+    grid-template-columns: 1fr
+  }
+
+  .wrap {
+    min-width: 0
+  }
+
+  .toolbar {
+    align-items: start
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  html {
+    scroll-behavior: auto
+  }
+
+  * {
+    transition: none !important
+  }
+}
