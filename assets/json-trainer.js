@@ -19,6 +19,11 @@
     pageData = null,
     flat = [];
   const checks = {};
+  function reveal(id) {
+    const el = $(id), box = el.getBoundingClientRect();
+    if (box.top < 24 || box.bottom > innerHeight - 24) el.scrollIntoView({block:'center',behavior:'smooth'});
+  }
+
   $('original-total').textContent = TOPIC09_DATA.api.total;
 
   function showPage(data, label) {
@@ -97,6 +102,8 @@
     $('flat-feedback').textContent = '';
     $('flat-count').value = '';
     checks.flat = false;
+    checks.ai = false;
+    $('ai-feedback').textContent = 'Выберите ответ для текущего набора данных.';
     const t = toTables(products);
     $('tables-stats').textContent =
       `products: ${t.products.length} строк; reviews: ${t.reviews.length} строк. Уникальных товаров: ${new Set(t.products.map(p=>p.id)).size}. Отзывов без родительского товара: ${t.reviews.filter(r=>!t.products.some(p=>p.id===r.product_id)).length}. Средняя цена по товарам: ${num(avg(products.map(p=>p.price)))}.`;
@@ -127,6 +134,7 @@
     $('flat-stats').textContent =
       `Строк после раскрытия: ${flat.length}. Уникальных товаров осталось: ${new Set(flat.map(r=>r.product_id)).size} из ${products.length}. Без отзывов: ${noReviews.length} — они исчезли. Средняя по товарам: ${num(avg(products.map(p=>p.price)))}; по строкам отзывов: ${num(avg(flat.map(r=>r.price)))}.`;
     $('flat-table').innerHTML = table(flat);
+    reveal('flat-stats');
   }
   $('unfold').onclick = unfold;
   $('check-flat').onclick = () => {
@@ -170,9 +178,18 @@
     checks[k] = ok;
     $(k + '-feedback').innerHTML = ok ? '<span class="ok">Верно. ' + (k === 'missing' ?
         'null — явное значение существующего поля; missing — отсутствие ключа.' :
-        'Сравните показатели в шаге 3: строки отзывов дают другой вес товарам.') + '</span>' :
+        `Итог для текущего набора: ${products.length} товаров и ${toTables(products).reviews.length} отзывов. При раскрытии исчезают ${products.filter(p=>!(p.reviews||[]).length).length} товаров без отзывов. Средняя цена всех товаров — ${num(avg(products.map(p=>p.price)))}; её нужно считать по products, а не по строкам отзывов.`) + '</span>' :
       '<span class="bad">Пока неверно. ' + (k === 'missing' ? 'Сравните наличие самого ключа в JSON.' :
         'Раскрытие может удалить родителей и повторить цену несколько раз.') + '</span>';
+  });
+  for (const id of ['check-page','inspect','check-flat']) {
+    const handler = $(id).onclick;
+    const output = {'check-page':'page-feedback','inspect':'path-output','check-flat':'flat-feedback'}[id];
+    $(id).onclick = (...args) => { handler(...args); reveal(output); };
+  }
+  document.querySelectorAll('[data-answer]').forEach(button => {
+    const handler=button.onclick;
+    button.onclick=(...args)=>{handler(...args);reveal(button.dataset.answer+'-feedback');};
   });
   $('protocol').onclick = () => download('practice09_1.txt', 'Практика 09·1\nНабор: ' + source +
     '\nПроверки: ' + JSON.stringify(checks, null, 2) + '\nТоваров: ' + products.length + '\nОтзывов: ' +

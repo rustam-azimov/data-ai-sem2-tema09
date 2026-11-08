@@ -454,4 +454,10 @@
   };
   window.TOPIC09_TASKS = tasks;
   show();
+  document.addEventListener('click', event => {
+    const button=event.target.closest('button');
+    if (!button || !( ['run','check','hint','solution'].includes(button.id) || button.hasAttribute('data-model'))) return;
+    const output=$('feedback'), rect=output.getBoundingClientRect();
+    if(rect.top<24 || rect.bottom>innerHeight-24) output.scrollIntoView({block:'center',behavior:'smooth'});
+  });
 })();
