@@ -17,6 +17,7 @@
   let products = structuredClone(TOPIC09_DATA.products),
     source = 'Учебная выборка · 12 товаров',
     pageData = null,
+    pageMetadata = null,
     flat = [];
   const checks = {};
   function reveal(id) {
@@ -26,8 +27,11 @@
 
   $('original-total').textContent = TOPIC09_DATA.api.total;
 
-  function showPage(data, label) {
+  function showPage(data, label, metadata) {
     pageData = data;
+    pageMetadata = {...metadata, total: data.total, limit: data.limit, skip: data.skip,
+      count: data.products.length, ids: data.products.map(p => p.id)};
+    $('page-export-status').textContent = 'Экспорт сохраняет последнюю успешно полученную страницу и сведения о её источнике.';
     checks.page = false;
     $('api-status').textContent =
       `${label}. На странице: ${data.products.length}; total: ${data.total}; limit: ${data.limit}; skip: ${data.skip}.`;
@@ -50,30 +54,50 @@
       total: 30,
       skip,
       limit
-    }, 'Снимок первых 30 товаров; это отдельный учебный каталог');
+    }, 'Снимок первых 30 товаров; это отдельный учебный каталог', {
+      mode: 'snapshot', source_url: new URL('../05_ДАННЫЕ_СТУДЕНТАМ/api_response.json', location.href).href,
+      request_url: null, example_live_url: requestURL(), http_status: null, received_at: null,
+      source_total: TOPIC09_DATA.api.total,
+      note: 'Локальная страница каталога из первых 30 товаров. total=30 относится к этому каталогу. Исходные HTTP-статус и дата получения снимка неизвестны.'
+    });
   }
   $('snapshot').onclick = snapshot;
   $('live').onclick = async () => {
     const b = $('live');
     b.disabled = true;
     $('api-status').textContent = 'Запрос к DummyJSON…';
-    $('request-url').textContent = requestURL();
+    const requestedURL = requestURL();
+    $('request-url').textContent = requestedURL;
     try {
-      const r = await fetch(requestURL(), {
+      const r = await fetch(requestedURL, {
         signal: AbortSignal.timeout(12000)
       });
       if (!r.ok) throw Error('HTTP ' + r.status);
       const d = await r.json();
-      validate(d);
+      // Пустая страница API допустима; загружаемые учебные файлы остаются непустыми.
+      if (!(Array.isArray(d?.products) && d.products.length === 0)) validate(d);
       if (!Number.isSafeInteger(d.total) || !Number.isSafeInteger(d.skip) || !Number.isSafeInteger(d
           .limit)) throw Error('Неожиданная структура ответа');
-      showPage(d, 'Живой API · ' + new Date().toLocaleString('ru-RU'));
+      const received = new Date();
+      showPage(d, 'Живой API · ' + received.toLocaleString('ru-RU'), {
+        mode: 'live', source_url: r.url, request_url: requestedURL,
+        http_status: r.status, received_at: received.toISOString(), source_total: d.total,
+        note: 'Получено из живого API. Время указано в UTC; сохранён JSON разобранного ответа, а не исходные байты HTTP.'
+      });
     } catch (e) {
       $('api-status').textContent = 'Живой запрос не выполнен: ' + e.message +
         '. Последний успешный ответ остаётся ниже. Можно запросить снимок.';
     } finally {
       b.disabled = false;
     }
+  };
+  $('download-page').onclick = () => {
+    download('page_response.json', JSON.stringify(pageData, null, 2), 'application/json');
+    $('page-export-status').textContent = `Сохранён JSON текущей страницы: ${pageData.products.length} товаров. Режим: ${pageMetadata.mode}.`;
+  };
+  $('download-page-source').onclick = () => {
+    download('page_source.json', JSON.stringify({...pageMetadata, exported_at: new Date().toISOString()}, null, 2), 'application/json');
+    $('page-export-status').textContent = 'Карточка источника сохранена. Время экспорта не заменяет время получения исходных данных.';
   };
   $('check-page').onclick = () => {
     const v = $('page-count').value;
