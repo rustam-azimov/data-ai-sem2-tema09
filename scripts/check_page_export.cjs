@@ -88,6 +88,7 @@ async function main() {
       await page.waitForFunction(() => !document.getElementById('live').disabled);
     }
     await page.goto(pageURL);
+    await page.locator('#api-refresh > summary').click();
     await page.waitForFunction(() => document.getElementById('api-json').textContent.length > 0);
     const initial = await exported();
     await check('Снимок: реальные скачивания, источник, неизвестные HTTP/дата', async () => {

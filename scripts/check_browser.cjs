@@ -59,6 +59,8 @@ const root = path.resolve(__dirname, '..'),
     });
   }
   await page.goto(base + '/' + encodeURI(pages[4]));
+  await page.selectOption('#route', 'advanced');
+  await page.locator('#api-refresh > summary').click();
   check((await text('api-status')).includes('На странице: 10'), 'snapshot page');
   await page.fill('#page-count', '194');
   await page.click('#check-page');
@@ -114,6 +116,7 @@ const root = path.resolve(__dirname, '..'),
   await page.click('#reset-data');
   check((await text('tables-stats')).includes('products: 12'), 'reset data');
   await page.goto(base + '/' + encodeURI(pages[5]));
+  await page.selectOption('#route', 'advanced');
   for (let i = 0; i < 8; i++) {
     await page.click(`[data-task="${i}"]`);
     await page.click('#mode-code');
@@ -142,6 +145,7 @@ const root = path.resolve(__dirname, '..'),
   check((await text('progress')).includes('9 из 9'), 'model right');
   await page.reload();
   check((await text('progress')).includes('9 из 9'), 'saved progress');
+  await page.selectOption('#route', 'advanced');
   await page.click('[data-task="4"]');
   await page.click('#mode-builder');
   await page.selectOption('#b-array', 'separate');
@@ -156,6 +160,34 @@ const root = path.resolve(__dirname, '..'),
   });
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
     'mobile after result');
+  // Маршруты сохраняют ответы и показывают ровно выбранный набор заданий.
+  await page.selectOption('#route', 'basic');
+  check(await page.locator('#tasks button:visible').count() === 4, 'basic: 4 tasks');
+  check((await text('progress')).includes('4 из 4'), 'basic completion');
+  await page.selectOption('#route', 'analysis');
+  check(await page.locator('#tasks button:visible').count() === 7, 'analysis: 7 tasks');
+  await page.selectOption('#route', 'advanced');
+  check(await page.locator('#tasks button:visible').count() === 9, 'advanced: 9 tasks');
+  await page.click('[data-task="7"]');
+  await page.click('#mode-code');
+  await page.fill('#query', '[{"$group":{"_id":"$category"}}]');
+  await page.selectOption('#route', 'basic');
+  check((await text('task')).includes('Категория и цена'), 'hidden current task switches');
+  await page.selectOption('#route', 'advanced');
+  await page.click('[data-task="7"]');
+  check(await page.inputValue('#query') === '[{"$group":{"_id":"$category"}}]', 'route preserves draft');
+  await page.goto(base + '/' + encodeURI(pages[4]));
+  check(await page.inputValue('#route') === 'basic', 'json starts basic');
+  check(!await page.locator('[data-level="analysis"]').isVisible(), 'json basic hides CSV');
+  check(!await page.locator('[data-level="advanced"]').isVisible(), 'json basic hides AI');
+  check(!await page.locator('#api-refresh').getAttribute('open'), 'API refresher closed');
+  await page.fill('#json-path', 'reviews[0].rating');
+  await page.selectOption('#route', 'analysis');
+  check(await page.locator('[data-level="analysis"]').isVisible(), 'json analysis shows CSV');
+  check(!await page.locator('[data-level="advanced"]').isVisible(), 'json analysis hides AI');
+  await page.selectOption('#route', 'advanced');
+  check(await page.locator('[data-level="advanced"]').isVisible(), 'json advanced shows AI');
+  check(await page.inputValue('#json-path') === 'reviews[0].rating', 'json route preserves input');
   await page.goto(base + '/' + encodeURI(pages[3]));
   for (const [isu, n] of [
       ['123456', 1],

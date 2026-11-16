@@ -183,10 +183,25 @@
     updateProgress();
   };
 
+  const routes = {
+    basic: [1, 2, 3, 9],
+    analysis: [1, 2, 3, 4, 5, 6, 9],
+    advanced: tasks.map(t => t.id)
+  };
+  const visibleTasks = () => tasks.filter(t => routes[$('route').value].includes(t.id));
+  $('route').onchange = () => {
+    remember();
+    if (!routes[$('route').value].includes(tasks[current].id)) current = 0;
+    show();
+  };
+
   function updateProgress() {
     $('progress').textContent =
-      `Решено ${tasks.filter(t=>progress[t.id]?.passed).length} из ${tasks.length}. Прогресс хранится только в этом браузере.`;
+      `Решено ${visibleTasks().filter(t=>progress[t.id]?.passed).length} из ${visibleTasks().length} на выбранном уровне. Во всём банке: ${tasks.filter(t=>progress[t.id]?.passed).length} из ${tasks.length}. Прогресс хранится только в этом браузере.`;
+    $('route-description').textContent = `Заданий на этом уровне: ${visibleTasks().length}. ` +
+      (visibleTasks().every(t => progress[t.id]?.passed) ? 'Маршрут завершён. Можно остановиться или выбрать следующий уровень.' : 'Завершите задания выбранного маршрута.');
     document.querySelectorAll('#tasks button').forEach((b, i) => {
+      b.hidden = !routes[$('route').value].includes(tasks[i].id);
       b.classList.toggle('active', i === current);
       b.textContent = (progress[tasks[i].id]?.passed ? '✓ ' : '') + tasks[i].id + '. ' + tasks[i].title;
     });
@@ -443,7 +458,7 @@
       '// Данные: products_training.json, учебная выборка, 12 товаров.\n' + mongo(lastQuery) + ';\n');
   };
   $('download-progress').onclick = () => download('practice09_2.txt',
-    'Практика 09·2\nУчебная выборка: 12 товаров\n' + tasks.map(t =>
+    'Практика 09·2\nУровень: ' + $('route').selectedOptions[0].text + '\nУчебная выборка: 12 товаров\n' + tasks.map(t =>
       `${t.id}. ${t.title}: ${progress[t.id]?.passed?'решено':'не решено'}; попыток ${progress[t.id]?.attempts||0}; разбор ${progress[t.id]?.viewedSolution?'просмотрен':'не просмотрен'}`
       ).join('\n'));
   $('reset-progress').onclick = () => {

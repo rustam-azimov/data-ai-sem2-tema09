@@ -1,4 +1,5 @@
 """Сборка навигации и каркасов страниц темы 9. Контент тренажёров — assets/*.js."""
+raise SystemExit("Архивный сборщик каркасов: он перезаписывает готовые страницы заглушками. Редактируйте HTML напрямую; лонгрид собирается ITMO_sem2_tema9/build_theory.py с последующим встраиванием видео.")
 from pathlib import Path
 R=Path(__file__).resolve().parents[1]
 def page(path,title,body,script='',root=False):
